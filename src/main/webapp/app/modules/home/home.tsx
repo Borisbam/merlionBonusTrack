@@ -1,101 +1,151 @@
 import './home.scss';
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Translate } from 'react-jhipster';
+import React, { Fragment, useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { Row, Col, Alert } from 'reactstrap';
+import { makeStyles } from '@material-ui/core/styles';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Axios from 'axios';
+import Encargar from './components/Encargar';
+import Devolver from './components/Devolver';
+import Romper from './components/Romper';
+import Arreglar from './components/Arreglar';
 
 import { IRootState } from 'app/shared/reducers';
-
 export type IHomeProp = StateProps;
+
+const useStyles = makeStyles({
+  table: {
+    minWidth: 650,
+    maxWidth: 800,
+
+  },
+});
 
 export const Home = (props: IHomeProp) => {
   const { account } = props;
+  const classes = useStyles();
+
+  const [productos, setProductos] = useState([{
+    "availableToSellQuantity": 0,
+    "brokenQuantity": 0,
+    "id": 0,
+    "inChargeQuantity": 0,
+    "product": {
+      "id": 0,
+      "name": "string"
+    }
+  }])
+
+  useEffect(() => {
+
+
+    const obtenerProductos = async () => {
+      const url = 'http://localhost:8080/api/product-buckets';
+      const ventas = await Axios.get(url);
+      const resultados = ventas;
+
+      setProductos(resultados.data);
+      // eslint-disable-next-line no-console
+      console.log(productos);
+    }
+
+
+    obtenerProductos();
+
+
+  }, [])
+
+  const encargar = disponible => {
+    const aux = disponible;
+    if (aux.inChargeQuantity < 3 && aux.availableToSellQuantity > 0) {
+      aux.inChargeQuantity = aux.inChargeQuantity + 1;
+      aux.availableToSellQuantity = aux.availableToSellQuantity - 1;
+    }
+    setProductos([
+      ...productos
+    ])
+  }
+
+  const devolver = devuelto => {
+    const aux = devuelto;
+    if (aux.availableToSellQuantity < 10 && aux.inChargeQuantity > 0) {
+      aux.availableToSellQuantity = aux.availableToSellQuantity + 1;
+      aux.inChargeQuantity = aux.inChargeQuantity - 1;
+    }
+    setProductos([
+      ...productos
+    ])
+  }
+
+  const romper = roto => {
+    const aux = roto;
+    if (aux.brokenQuantity < 2 && aux.availableToSellQuantity > 0) {
+      aux.brokenQuantity = aux.brokenQuantity + 1;
+      aux.availableToSellQuantity = aux.availableToSellQuantity - 1;
+    }
+    setProductos([
+      ...productos
+    ])
+  }
+
+  const arreglar = arreglado => {
+    const aux = arreglado;
+    if (aux.availableToSellQuantity < 10 && aux.brokenQuantity > 0) {
+      aux.availableToSellQuantity = aux.availableToSellQuantity + 1;
+      aux.brokenQuantity = aux.brokenQuantity - 1;
+    }
+    setProductos([
+      ...productos
+    ])
+  }
+
 
   return (
-    <Row>
-      <Col md="9">
-        <h2>
-          <Translate contentKey="home.title">Welcome, Java Hipster!</Translate>
-        </h2>
-        <p className="lead">
-          <Translate contentKey="home.subtitle">This is your homepage</Translate>
-        </p>
-        {account && account.login ? (
-          <div>
-            <Alert color="success">
-              <Translate contentKey="home.logged.message" interpolate={{ username: account.login }}>
-                You are logged in as user {account.login}.
-              </Translate>
-            </Alert>
-          </div>
-        ) : (
-          <div>
-            <Alert color="warning">
-              <Translate contentKey="global.messages.info.authenticated.prefix">If you want to </Translate>
-              <Link to="/login" className="alert-link">
-                <Translate contentKey="global.messages.info.authenticated.link"> sign in</Translate>
-              </Link>
-              <Translate contentKey="global.messages.info.authenticated.suffix">
-                , you can try the default accounts:
-                <br />- Administrator (login=&quot;admin&quot; and password=&quot;admin&quot;)
-                <br />- User (login=&quot;user&quot; and password=&quot;user&quot;).
-              </Translate>
-            </Alert>
 
-            <Alert color="warning">
-              <Translate contentKey="global.messages.info.register.noaccount">You do not have an account yet?</Translate>&nbsp;
-              <Link to="/account/register" className="alert-link">
-                <Translate contentKey="global.messages.info.register.link">Register a new account</Translate>
-              </Link>
-            </Alert>
-          </div>
-        )}
-        <p>
-          <Translate contentKey="home.question">If you have any question on JHipster:</Translate>
-        </p>
 
-        <ul>
-          <li>
-            <a href="https://www.jhipster.tech/" target="_blank" rel="noopener noreferrer">
-              <Translate contentKey="home.link.homepage">JHipster homepage</Translate>
-            </a>
-          </li>
-          <li>
-            <a href="http://stackoverflow.com/tags/jhipster/info" target="_blank" rel="noopener noreferrer">
-              <Translate contentKey="home.link.stackoverflow">JHipster on Stack Overflow</Translate>
-            </a>
-          </li>
-          <li>
-            <a href="https://github.com/jhipster/generator-jhipster/issues?state=open" target="_blank" rel="noopener noreferrer">
-              <Translate contentKey="home.link.bugtracker">JHipster bug tracker</Translate>
-            </a>
-          </li>
-          <li>
-            <a href="https://gitter.im/jhipster/generator-jhipster" target="_blank" rel="noopener noreferrer">
-              <Translate contentKey="home.link.chat">JHipster public chat room</Translate>
-            </a>
-          </li>
-          <li>
-            <a href="https://twitter.com/jhipster" target="_blank" rel="noopener noreferrer">
-              <Translate contentKey="home.link.follow">follow @jhipster on Twitter</Translate>
-            </a>
-          </li>
-        </ul>
 
-        <p>
-          <Translate contentKey="home.like">If you like JHipster, do not forget to give us a star on</Translate>{' '}
-          <a href="https://github.com/jhipster/generator-jhipster" target="_blank" rel="noopener noreferrer">
-            Github
-          </a>
-          !
-        </p>
-      </Col>
-      <Col md="3" className="pad">
-        <span className="hipster rounded" />
-      </Col>
-    </Row>
+    <Fragment>
+
+      <h1>Control de Stock</h1>
+
+      <TableContainer >
+        <Table className={classes.table} aria-label="simple table" >
+          <TableHead>
+            <TableRow>
+              <TableCell align="right" >NRO</TableCell>
+              <TableCell align="right" >PRODUCTO</TableCell>
+              <TableCell align="right" >ENCARGADOS</TableCell>
+              <TableCell align="right" >MOVER</TableCell>
+              <TableCell align="right" >DISPONIBLES</TableCell>
+              <TableCell align="right" >MOVER</TableCell>
+              <TableCell align="right" >ROTOS</TableCell>
+
+            </TableRow>
+          </TableHead>
+
+          <TableBody> {productos.map(producto => (
+
+            <TableRow key={producto.id}>
+              <TableCell align="right" >{producto.id}</TableCell>
+              <TableCell align="right" >{producto.product.name}</TableCell>
+              <TableCell align="right" >{producto.inChargeQuantity}</TableCell>
+              <TableCell align="right" ><Encargar encargar={encargar} producto={producto} /><Devolver devolver={devolver} producto={producto} /></TableCell>
+              <TableCell align="right" >{producto.availableToSellQuantity}</TableCell>
+              <TableCell align="right" ><Arreglar arreglar={arreglar} producto={producto} /><Romper romper={romper} producto={producto} /></TableCell>
+              <TableCell align="right" >{producto.brokenQuantity}</TableCell>
+            </TableRow>
+
+          ))}
+          </TableBody>
+
+        </Table>
+      </TableContainer>
+    </Fragment>
   );
 };
 
